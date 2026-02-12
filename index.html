@@ -2,36 +2,45 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Hadi AI Interactive</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hadi | AI Developer</title>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{
   background:#020617;
-  color:white;
-  font-family:Arial;
-  overflow:hidden;
+  color:#e5e7eb;
+  font-family:"Times New Roman", Times, serif;
 }
 
-/* AI canvas */
+/* AI Canvas */
 #ai-bg{
   position:fixed;
-  top:0;left:0;
-  width:100vw;
-  height:100vh;
+  inset:0;
   z-index:0;
 }
 
 /* site content */
-#content{
+body > *:not(canvas){
   position:relative;
   z-index:10;
-  text-align:center;
-  margin-top:40vh;
 }
-h1{font-size:40px;}
-p{font-size:20px;color:#60a5fa;}
+
+/* NAV */
+nav{
+  background:#01040d;
+  padding:12px 20px;
+  display:flex;
+  gap:24px;
+  position:fixed;
+  top:0;
+  width:100%;
+  z-index:100;
+}
+
+nav a{color:white;text-decoration:none;}
+section{padding:120px 40px 80px;max-width:1000px;margin:auto;}
+.subtitle{color:#60a5fa;font-size:26px;}
 </style>
 </head>
 
@@ -39,11 +48,20 @@ p{font-size:20px;color:#60a5fa;}
 
 <canvas id="ai-bg"></canvas>
 
-<div id="content">
+<nav>
+  <a href="#home">HOME</a>
+  <a href="#about">ABOUT</a>
+</nav>
+
+<section id="home">
   <h1>Hadi Kanani</h1>
-  <p>AI & Deep Learning Developer</p>
+  <div class="subtitle">AI & Deep Learning Developer</div>
   <p>Move your hand in front of camera ✋</p>
-</div>
+</section>
+
+<section id="about">
+  <p>Interactive AI portfolio website.</p>
+</section>
 
 <script type="module">
 import {
@@ -55,11 +73,10 @@ const canvas = document.getElementById("ai-bg");
 const ctx = canvas.getContext("2d");
 
 function resize(){
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  canvas.width = innerWidth;
+  canvas.height = innerHeight;
 }
-resize();
-window.onresize = resize;
+resize(); window.onresize = resize;
 
 // camera
 const video = document.createElement("video");
@@ -81,39 +98,20 @@ const hand = await HandLandmarker.createFromOptions(fileset,{
   runningMode:"VIDEO"
 });
 
-// particles
-let particles = Array.from({length:250},()=>({
-  a:Math.random()*Math.PI*2,
-  b:Math.random()*Math.PI*2
-}));
-
 function loop(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
-
   const res = hand.detectForVideo(video, performance.now());
-  let spread = 120;
 
   if(res.landmarks){
-    const p1 = res.landmarks[0][4];
-    const p2 = res.landmarks[0][8];
-    const dx = p1.x-p2.x;
-    const dy = p1.y-p2.y;
-    spread = Math.sqrt(dx*dx+dy*dy)*700;
+    for(const h of res.landmarks){
+      for(const p of h){
+        ctx.beginPath();
+        ctx.arc(p.x*canvas.width, p.y*canvas.height, 6, 0, Math.PI*2);
+        ctx.fillStyle="#00f5ff";
+        ctx.fill();
+      }
+    }
   }
-
-  const cx = canvas.width/2;
-  const cy = canvas.height/2;
-
-  for(const p of particles){
-    const x = cx + Math.cos(p.a)*spread*Math.sin(p.b);
-    const y = cy + Math.sin(p.a)*spread*Math.cos(p.b);
-
-    ctx.beginPath();
-    ctx.arc(x,y,3,0,Math.PI*2);
-    ctx.fillStyle="#00f5ff";
-    ctx.fill();
-  }
-
   requestAnimationFrame(loop);
 }
 loop();
