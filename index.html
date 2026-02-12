@@ -1,57 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hadi | AI & Deep Learning Developer</title>
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box;}
-    body{
-      background:#020617;
-      color:#e5e7eb;
-      font-family:"Times New Roman", Times, serif;
-      overflow:hidden;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hadi | AI & Deep Learning Developer</title>
 
-    /* ===== AI BACKGROUND ===== */
-    #ai-bg{
-      position:fixed;
-      inset:0;
-      z-index:0;
-    }
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
 
-    /* everything above canvas */
-    body > *:not(canvas){
-      position:relative;
-      z-index:10;
-    }
+body{
+  background:#020617;
+  color:#e5e7eb;
+  font-family:"Times New Roman", Times, serif;
+  line-height:1.8;
+}
 
-    /* NAV */
-    nav{
-      background:#01040d;
-      padding:12px 20px;
-      display:flex;
-      gap:24px;
-      position:fixed;
-      top:0;
-      width:100%;
-      z-index:100;
-    }
+/* ===== AI BACKGROUND ===== */
+#ai-bg{
+  position:fixed;
+  inset:0;
+  z-index:0;
+}
 
-    nav a{color:white;text-decoration:none;}
-    section{padding:120px 40px 80px;max-width:1100px;margin:auto;}
-    .subtitle{color:#60a5fa;font-size:26px;}
-  </style>
+/* everything above canvas */
+.main{
+  position:relative;
+  z-index:10;
+}
+
+/* ===== NAV ===== */
+nav{
+  background:#01040d;
+  padding:12px 20px;
+  display:flex;
+  gap:24px;
+  align-items:center;
+  position:fixed;
+  top:0;
+  width:100%;
+  z-index:100;
+  border-bottom:1px solid #1e293b;
+}
+
+nav a{
+  text-decoration:none;
+  color:#e5e7eb;
+  font-size:16px;
+}
+
+/* ===== SECTIONS ===== */
+section{
+  padding:120px 40px 80px;
+  max-width:1100px;
+  margin:auto;
+}
+
+.subtitle{
+  font-size:30px;
+  color:#60a5fa;
+}
+</style>
 </head>
 
 <body>
 
 <canvas id="ai-bg"></canvas>
 
-<!-- Main Content -->
+<div class="main">
+
 <nav>
   <a href="#home">HOME</a>
   <a href="#about">ABOUT</a>
+  <a href="#projects">PROJECTS</a>
+  <a href="#contact">CONTACT</a>
 </nav>
 
 <section id="home">
@@ -61,8 +86,20 @@
 </section>
 
 <section id="about">
-  <p>Interactive AI portfolio website.</p>
+  <p>
+    I am an AI and Deep Learning developer focused on designing and building intelligent systems.
+  </p>
 </section>
+
+<section id="projects">
+  <p>Projects coming soon...</p>
+</section>
+
+<section id="contact">
+  <p>Email: kanaanihadi1993@gmail.com</p>
+</section>
+
+</div>
 
 <!-- ================= HAND TRACKER ================= -->
 <script type="module">
@@ -108,7 +145,7 @@ function loop(){
     for(const h of res.landmarks){
       for(const p of h){
         ctx.beginPath();
-        ctx.arc(p.x*canvas.width, p.y*canvas.height, 6, 0, Math.PI*2);
+        ctx.arc(p.x*canvas.width, p.y*canvas.height, 5, 0, Math.PI*2);
         ctx.fillStyle="#00f5ff";
         ctx.fill();
       }
