@@ -1,121 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hadi | AI & Deep Learning Developer</title>
-
+<title>AI Orb</title>
 <style>
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-}
-
 body{
+  margin:0;
   background:#020617;
-  color:#e5e7eb;
-  font-family:"Times New Roman", Times, serif;
-  line-height:1.8;
+  overflow:hidden;
 }
 
-/* ===== AI BACKGROUND ===== */
-#ai-bg{
+canvas{
   position:fixed;
   inset:0;
-  z-index:0;
-}
-
-/* everything above canvas */
-.main{
-  position:relative;
-  z-index:10;
-}
-
-/* ===== NAV ===== */
-nav{
-  background:#01040d;
-  padding:12px 20px;
-  display:flex;
-  gap:24px;
-  align-items:center;
-  position:fixed;
-  top:0;
-  width:100%;
-  z-index:100;
-  border-bottom:1px solid #1e293b;
-}
-
-nav a{
-  text-decoration:none;
-  color:#e5e7eb;
-  font-size:16px;
-}
-
-/* ===== SECTIONS ===== */
-section{
-  padding:120px 40px 80px;
-  max-width:1100px;
-  margin:auto;
-}
-
-.subtitle{
-  font-size:30px;
-  color:#60a5fa;
 }
 </style>
 </head>
-
 <body>
 
-<canvas id="ai-bg"></canvas>
+<canvas id="c"></canvas>
 
-<div class="main">
-
-<nav>
-  <a href="#home">HOME</a>
-  <a href="#about">ABOUT</a>
-  <a href="#projects">PROJECTS</a>
-  <a href="#contact">CONTACT</a>
-</nav>
-
-<section id="home">
-  <h1>Hadi Kanani</h1>
-  <div class="subtitle">AI & Deep Learning Developer</div>
-  <p>Move your hand in front of camera ✋</p>
-</section>
-
-<section id="about">
-  <p>
-    I am an AI and Deep Learning developer focused on designing and building intelligent systems.
-  </p>
-</section>
-
-<section id="projects">
-  <p>Projects coming soon...</p>
-</section>
-
-<section id="contact">
-  <p>Email: kanaanihadi1993@gmail.com</p>
-</section>
-
-</div>
-
-<!-- ================= HAND TRACKER ================= -->
 <script type="module">
 import {
   FilesetResolver,
   HandLandmarker
 } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
 
-const canvas = document.getElementById("ai-bg");
+const canvas = document.getElementById("c");
 const ctx = canvas.getContext("2d");
 
 function resize(){
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  canvas.width = innerWidth;
+  canvas.height = innerHeight;
 }
-resize(); window.onresize = resize;
+resize(); onresize = resize;
 
 // camera
 const video = document.createElement("video");
@@ -137,20 +55,53 @@ const hand = await HandLandmarker.createFromOptions(fileset,{
   runningMode:"VIDEO"
 });
 
+// virtual sphere
+let rotX = 0;
+let rotY = 0;
+
+function project(x,y,z){
+  const scale = 500/(z+600);
+  return {
+    x: x*scale + canvas.width/2,
+    y: y*scale + canvas.height/2
+  };
+}
+
 function loop(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
+
   const res = hand.detectForVideo(video, performance.now());
 
   if(res.landmarks){
-    for(const h of res.landmarks){
-      for(const p of h){
-        ctx.beginPath();
-        ctx.arc(p.x*canvas.width, p.y*canvas.height, 5, 0, Math.PI*2);
-        ctx.fillStyle="#00f5ff";
-        ctx.fill();
-      }
+    const h = res.landmarks[0];
+    const cx = (h[9].x-0.5)*2;
+    const cy = (h[9].y-0.5)*2;
+    rotY = cx*1.5;
+    rotX = cy*1.5;
+  }
+
+  // draw sphere
+  const r = 180;
+  for(let a=0;a<Math.PI*2;a+=0.3){
+    for(let b=0;b<Math.PI;b+=0.3){
+      let x = r * Math.sin(b) * Math.cos(a);
+      let y = r * Math.cos(b);
+      let z = r * Math.sin(b) * Math.sin(a);
+
+      // rotate
+      let dx = x*Math.cos(rotY)-z*Math.sin(rotY);
+      let dz = x*Math.sin(rotY)+z*Math.cos(rotY);
+      let dy = y*Math.cos(rotX)-dz*Math.sin(rotX);
+      dz = y*Math.sin(rotX)+dz*Math.cos(rotX);
+
+      const p = project(dx,dy,dz);
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,2.5,0,Math.PI*2);
+      ctx.fillStyle="#00f5ff";
+      ctx.fill();
     }
   }
+
   requestAnimationFrame(loop);
 }
 loop();
