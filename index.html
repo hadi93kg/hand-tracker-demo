@@ -1,69 +1,203 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Hand Tracker</title>
-  <style>
-    body { margin:0; background:#0b132b; overflow:hidden; }
-    canvas { position:fixed; top:0; left:0; }
-    video { display:none; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hadi | AI & Deep Learning Developer</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  background:#020617;
+  color:#e5e7eb;
+  font-family:"Times New Roman", Times, serif;
+  line-height:1.8;
+  overflow-x:hidden;
+}
+
+/* ===== AI BACKGROUND ===== */
+#ai-bg{
+  position:fixed;
+  inset:0;
+  z-index:0;
+}
+
+/* everything above canvas */
+body > *:not(canvas){
+  position:relative;
+  z-index:10;
+}
+
+/* ===== NAV ===== */
+nav{
+  background:rgba(1,4,13,0.8);
+  padding:12px 20px;
+  display:flex;
+  gap:24px;
+  align-items:center;
+  position:fixed;
+  top:0;
+  width:100%;
+  z-index:100;
+  border-bottom:1px solid #1e293b;
+  backdrop-filter: blur(6px);
+}
+
+nav a{
+  text-decoration:none;
+  color:#e5e7eb;
+  font-size:16px;
+  letter-spacing:1px;
+}
+
+nav a:hover{color:#f97316;}
+
+/* ===== SECTIONS ===== */
+section{
+  padding:120px 40px 80px;
+  max-width:1100px;
+  margin:auto;
+}
+
+h1{font-size:28px;}
+.subtitle{font-size:30px;color:#60a5fa;}
+
+.projects{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:22px;
+  margin-top:30px;
+}
+
+.project-card{
+  background:#020617cc;
+  border:1px solid #f97316;
+  padding:22px;
+  border-radius:14px;
+  text-decoration:none;
+  color:#e5e7eb;
+}
+.project-card:hover{
+  box-shadow:0 0 20px rgba(249,115,22,.4);
+}
+
+.contact-link{
+  display:block;
+  margin:12px 0;
+  color:#60a5fa;
+  text-decoration:none;
+}
+.contact-link:hover{color:#f97316;}
+
+.fa{direction:rtl;text-align:right;}
+</style>
 </head>
+
 <body>
 
-<video id="video"></video>
-<canvas id="canvas"></canvas>
+<canvas id="ai-bg"></canvas>
 
+<nav>
+  <a href="#home">HOME</a>
+  <a href="#about">ABOUT</a>
+  <a href="#projects">PROJECTS</a>
+  <a href="#contact">CONTACT</a>
+</nav>
+
+<section id="home">
+  <h1>Hadi Kanani</h1>
+  <div class="subtitle">AI & Deep Learning Developer</div>
+</section>
+
+<section id="about">
+  <h2>About Me</h2>
+  <p>I am an AI and Deep Learning developer focused on designing intelligent systems.</p>
+  <p class="fa">من توسعه‌دهنده هوش مصنوعی و یادگیری عمیق هستم.</p>
+</section>
+
+<section id="projects">
+  <h2>Projects</h2>
+  <div class="projects">
+    <a class="project-card" href="#">AI Attendance System</a>
+    <a class="project-card" href="#">Smart Inventory</a>
+    <a class="project-card" href="#">Restaurant QR Menu</a>
+    <a class="project-card" href="#">Industrial Defect Detection</a>
+  </div>
+</section>
+
+<section id="contact">
+  <h2>Contact</h2>
+  <a class="contact-link" href="mailto:kanaanihadi1993@gmail.com">Email</a>
+  <a class="contact-link" href="https://github.com/hadi93kg">GitHub</a>
+</section>
+
+<!-- ================= AI HAND SPHERE ================= -->
 <script type="module">
 import {
   FilesetResolver,
   HandLandmarker
 } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
 
-const video = document.getElementById("video");
-const canvas = document.getElementById("canvas");
+const canvas = document.getElementById("ai-bg");
 const ctx = canvas.getContext("2d");
+canvas.width = innerWidth;
+canvas.height = innerHeight;
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-const stream = await navigator.mediaDevices.getUserMedia({ video:true });
+const video = document.createElement("video");
+const stream = await navigator.mediaDevices.getUserMedia({video:true});
 video.srcObject = stream;
 await video.play();
 
-const filesetResolver = await FilesetResolver.forVisionTasks(
+const fileset = await FilesetResolver.forVisionTasks(
   "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm"
 );
 
-const handLandmarker = await HandLandmarker.createFromOptions(
-  filesetResolver,
-  {
-    baseOptions: {
-      modelAssetPath:
-        "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task"
-    },
-    numHands: 1,
-    runningMode: "VIDEO"
-  }
-);
+const hand = await HandLandmarker.createFromOptions(fileset,{
+  baseOptions:{
+    modelAssetPath:
+    "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task"
+  },
+  numHands:1,
+  runningMode:"VIDEO"
+});
+
+// sphere particles
+let particles = Array.from({length:200},()=>({
+  a:Math.random()*Math.PI*2,
+  b:Math.random()*Math.PI*2
+}));
 
 function loop(){
-  const res = handLandmarker.detectForVideo(video, performance.now());
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
+  const res = hand.detectForVideo(video, performance.now());
+  let spread = 150;
+
   if(res.landmarks){
-    for(const hand of res.landmarks){
-      for(const p of hand){
-        ctx.beginPath();
-        ctx.arc(p.x*canvas.width, p.y*canvas.height, 6, 0, Math.PI*2);
-        ctx.fillStyle = "#00f5ff";
-        ctx.fill();
-      }
-    }
+    const p1 = res.landmarks[0][4];
+    const p2 = res.landmarks[0][8];
+    const dx = p1.x-p2.x;
+    const dy = p1.y-p2.y;
+    spread = Math.sqrt(dx*dx+dy*dy)*600;
   }
+
+  const cx = canvas.width/2;
+  const cy = canvas.height/2;
+
+  for(const p of particles){
+    const x = cx + Math.cos(p.a)*spread*Math.sin(p.b);
+    const y = cy + Math.sin(p.a)*spread*Math.cos(p.b);
+
+    ctx.beginPath();
+    ctx.arc(x,y,3,0,Math.PI*2);
+    ctx.fillStyle="#00f5ff";
+    ctx.fill();
+  }
+
   requestAnimationFrame(loop);
 }
 loop();
 </script>
+
 </body>
 </html>
